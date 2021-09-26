@@ -1,0 +1,50 @@
+const mongoose = require('mongoose')
+const bcryptjs = require('bcryptjs');
+const saltRounds = 10;
+
+
+const userSchema = new mongoose.Schema({
+name: {
+type: String,
+required: true,
+trim: true
+},
+
+email: {
+type: String,
+required: true,
+trim: true
+},
+
+password: {
+type: String,
+required: true
+},
+})
+
+module.exports = mongoose.model("User", userSchema)
+
+
+module.exports.createUser = (newUser, callback) => {
+bcryptjs.genSalt(saltRounds, (err, salt) => {
+    bcryptjs.hash(newUser.password, salt, (err, hash) =>{
+        // Store hash in your password DB.
+const newUserResource = newUser;
+newUserResource.password = hash;
+newUserResource.save(callback);
+    });
+});
+}
+
+// module.exports.getUserByEmail = (email, callback) => {
+// const query = { email };
+// userSchema.findOne(query, callback);
+// };
+
+
+module.exports.comparePassword = (candidatePassword, hash, callback) => {
+bcryptjs.compare(candidatePassword, hash, (err, isMatch) => {
+if (err) throw err;
+callback(null, isMatch);
+});
+};
